@@ -1,0 +1,53 @@
+{
+  "name": "signed-url-generator",
+  "version": "1.0.0",
+  "description": "Creates a signed URL using a Custom or Canned Policy for AWS CloudFront.",
+  "directories": {
+    "test": "test",
+    "build":"build"
+  },
+  "scripts": {
+    "test": "mocha -r ts-node/register test/*.spec.ts",
+    "testWithCoverage": "nyc -r lcov -e .ts -x \"*.spec.ts\" mocha -r ts-node/register tests/*.spec.ts && nyc report",
+    "prestart":"tsc -b ./tsconfig.json",
+    "prebuild":"tsc -b ./tsconfig.json",
+    "start": "node ./out/index.js",
+    "compile":"node ./scripts/compile.js",
+    "build":"node ./scripts/build.js"
+
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/farhadfarhadii/signed-url-generator.git"
+  },
+  "keywords": [
+    "aws",
+    "cloudfront",
+    "s3",
+    "javascript",
+    "typescript",
+    "signed",
+    "canned",
+    "custom",
+    "policy",
+    "url"
+  ],
+  "author": "MyWebula Ltd",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/farhadfarhadii/signed-url-generator/issues"
+  },
+  "homepage": "https://github.com/farhadfarhadii/signed-url-generator#readme",
+  "devDependencies": {
+    "@types/chai": "^4.1.7",
+    "@types/mocha": "^5.2.7",
+    "chai": "^4.2.0",
+    "dotenv": "^8.0.0",
+    "mocha": "^6.1.4",
+    "nyc": "^14.1.1",
+    "parcel-bundler": "^1.12.3",
+    "pkg": "^4.4.0",
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.2"
+  }
+}

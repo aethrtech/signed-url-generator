@@ -1,0 +1,13 @@
+.vscode
+node_modules
+out
+dist
+test/keys/*.pem
+test/keys/*.pem.pub
+build
+!test/keys/.gitkeep
+.nyc_output
+coverage
+test/policies
+!test/policies/.gitkeep
+.cache
