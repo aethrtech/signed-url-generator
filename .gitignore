@@ -12,3 +12,4 @@ test/policies
 !test/policies/.gitkeep
 .cache
 /vendor
+.markdownlint.json
