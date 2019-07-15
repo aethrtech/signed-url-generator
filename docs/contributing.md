@@ -5,14 +5,14 @@
 Thank you for getting involved in this project! To begin, please review and sign the **[Contributor Licence Agreement]()**. This agreement is nothing to fear! It simply establishes a written agreement between you and the the maintainer(s) of this project, for their benefit and yours. Software can be a complex legal challenge, especially when things go wrong and matters of ownership. Everyone shares a delegated responsiblity in maintaining high standards during development. Contributers must work together under a common agreement of practices. Once the CLA has been signed, your issues and pull requests will be tagged as `CLA:approved`.
 
 
-- [Setting Up The Project]()
-- [Creating Private Keys]()
-- [Installing Developer Dependencies]()
-- [Testing]()
-- [Debugging]()
-- [Building]()
-- [Reporting Bugs]()
-- [Pull Requests]()
+- [Setting Up The Project](#Setting-Up-The-Project)
+- [Creating Private Keys](#Creating-Private-Keys)
+- [Installing Developer Dependencies](#Installing-Developer-Dependencies)
+- [Testing](#Testing)
+- [Debugging](#Debugging)
+- [Building](#Building)
+- [Reporting Bugs](#Reporting-Bugs)
+- [Pull Requests](#Pull-Requests)
 
 <br />
 
@@ -107,19 +107,11 @@ npm i -D
 
 > **Note**: This will also install (or update) [Squirrel]() installer.
 
-<div style="display:flex">
-    <a style="flex:1" href="#header-contributing">Top of Section</a>
-    <a href="#table-of-contents">Back To Top</a>
-</div>
-
 <br />
 
 ## Testing
 
-<div style="display:flex">
-    <a style="flex:1" href="#header-contributing">Top of Section</a>
-    <a href="#table-of-contents">Back To Top</a>
-</div>
+<br />
 
 Before beginning development, it is _highly_ recommended you run `npm test` to make sure the software is running normally. If you encounter encounter an unexpected error, you may raise it as an issue. See [Reporting Bugs](#reporting-bugs) section for more information on how to report bugs.
 
@@ -180,3 +172,11 @@ npm run build
 `Pkg` is preconfigured to prune dev dependencies before bundling. _It is recommended not to change this setting_.
 
 After the script is completed, you should find your program compiled into a binary executable under `dist`.
+
+## Reporting Bugs
+
+See [Reporting Bugs](/docs/bugs.md).
+
+## Pull Requests
+
+TODO
