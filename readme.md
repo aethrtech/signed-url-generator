@@ -232,6 +232,7 @@ signed-url-generator --custom --policy "/path/to/policy.json" --base-url "https:
 ## **Creating A Signed URL Using A Canned Policy In Node (Server-Side)**
 
 ### **CommonJS (Node v8+)**
+
 ```Javascript
 
 const readFileSync = require('fs').readFileSync,
@@ -271,6 +272,7 @@ console.log(url)
 <div style="display:flex"><a style="flex:1" href="#header-examples">Top of Section</a><a href="#table-of-contents">Back To Top</a></div>
 
 ### **ES6+**
+
 ```Javascript
 
 import { readFileSync } from 'fs'
@@ -310,6 +312,7 @@ let url = generate(policy, baseUrl, keyPairId, privateKey, query).canned()
 ## **Creating A Signed URL Using A Custom Policy In Node (Server-Side)**
 
 ### **CommonJS (Node v8+)**
+
 ```Javascript
 
 const readFileSync = require('fs').readFileSync,
@@ -349,6 +352,7 @@ console.log(url)
 <div style="display:flex"><a style="flex:1" href="#header-examples">Top of Section</a><a href="#table-of-contents">Back To Top</a></div>
 
 ### **ES6+**
+
 ```Javascript
 
 import { readFileSync } from 'fs'
@@ -652,6 +656,8 @@ Once you have generated your private key, you may wish to install developer depe
 ```sh
 npm i -D
 ```
+
+> **Note**: This will also install (or update) [Squirrel]() installer.
 
 <div style="display:flex">
     <a style="flex:1" href="#header-contributing">Top of Section</a>
