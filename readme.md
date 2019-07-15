@@ -524,7 +524,7 @@ npm i -D @types/signed-url-generator
 
 [<div style="text-align: right">Back To Top</div>](#Table-of-Contents)
 
-Thanks! Please see [Contributing]() section.
+Thanks! Please see [Contributing](docs/contributing.md) section.
 
 <br />
 
