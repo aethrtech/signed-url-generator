@@ -11,3 +11,4 @@ coverage
 test/policies
 !test/policies/.gitkeep
 .cache
+/vendor
