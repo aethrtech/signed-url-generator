@@ -6,7 +6,8 @@ archs = ['x64','x86','armv6','armv7'],
 readFileSync = require('fs').readFileSync,
 renameSync = require('fs').renameSync,
 readdirSync = require('fs').readdirSync,
-package = JSON.parse(readFileSync('./package.json','utf8'))
+package = JSON.parse(readFileSync('./package.json','utf8')),
+createInstaller = require('./create-installer')
 
 function rename(platform,arch,file,extension){
     if (extension.length >= 3 && arch){ 
@@ -45,36 +46,46 @@ function build(target){
 }
 
 async function run(){
-    let targets
-    try {
-        targets = JSON.parse(readFileSync('./.compilerc','utf8')).targets
-    } catch(err){
-        console.warn('\u001b[43mNo compile configuration parsed or deteced. Using default settings.\u001b[0m')
-        targets = ['node','browser']
-    }
-    for (let target of targets){
-        await build(target)
-    }
+    // let targets
+    // try {
+    //     targets = JSON.parse(readFileSync('./.compilerc','utf8')).targets
+    // } catch(err){
+    //     console.warn('\u001b[43mNo compile configuration parsed or deteced. Using default settings.\u001b[0m')
+    //     targets = ['node','browser']
+    // }
+    // for (let target of targets){
+    //     await build(target)
+    // }
 
-    for (let platform of platforms){
-        if (platform.match(/linux|win/)){
-            for (let arch of archs){
-                if (platform.match(/win/) && arch.match(/x64|x86/) || platform.match(/linux/) && arch.match(/x64|armv6|armv7/)){
-                    await exec([`./out/src/app/index.js`,'--target',platform,'--out-path',`./dist/${platform}/${arch}`])
-                    let files = readdirSync(`./dist/${platform}/${arch}`) 
-                    let extension = files[0].split('.').pop()
-                    rename(platform, arch,files[0],extension)
-                }
+    // for (let platform of platforms){
+    //     if (platform.match(/linux|win/)){
+    //         for (let arch of archs){
+    //             if (platform.match(/win/) && arch.match(/x64|x86/) || platform.match(/linux/) && arch.match(/x64|armv6|armv7/)){
+    //                 await exec([`./out/src/app/index.js`,'--target',platform,'--out-path',`./dist/${platform}/${arch}`])
+    //                 let files = readdirSync(`./dist/${platform}/${arch}`) 
+    //                 let extension = files[0].split('.').pop()
+    //                 rename(platform, arch,files[0],extension)
+    //             }
+    //         }
+    //     } else {
+    //         await exec([`./out/src/app/index.js`,'--target',platform,'--out-path',`./dist/${platform}`])
+    //         let files = readdirSync(`./dist/${platform}`)
+    //         let extension = files[0].split('.').pop() 
+    //         rename(platform,null,files[0],extension)
+    //     }
+
+        if (platforms.includes('win')){
+            console.log('\u001b[36mCreating Windows Installer...\u001b[0m')
+            try {
+                await createInstaller()
+            } catch (err) {
+                console.error(`/u001b[31mUnable to create installer\n${err}\u001b[0m`)
             }
-        } else {
-            await exec([`./out/src/app/index.js`,'--target',platform,'--out-path',`./dist/${platform}`])
-            let files = readdirSync(`./dist/${platform}`)
-            let extension = files[0].split('.').pop() 
-            rename(platform,null,files[0],extension)
+
         }
         
 
-    }
+    // }
 
 
 
