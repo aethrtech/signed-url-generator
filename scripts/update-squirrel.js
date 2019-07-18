@@ -16,7 +16,7 @@ function getRelease(obj, options,cb){
         let ws = fs.createWriteStream(join(dir,obj.name))
         res.pipe(ws)
         res.on('error', err => reject(err))
-        res.on('close', () => {
+        ws.on('close', () => {
             console.log('\u001b[32mDownload complete!\u001b[0m')
             return cb()
         })
@@ -72,9 +72,6 @@ function unzipFile(tag){
 }
 
 async function update(){
-    if (process.argv.indexOf('-D') === -1 || process.argv.indexOf('--save-dev') === -1){
-        return console.log('\u001b[33mSkipping Squirrel install. If needed, run npm install again with flag -D or --save-dev.\u001b[0m')
-    }
     console.log('Checking for updates...')
     let json
     try {
