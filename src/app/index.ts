@@ -3,6 +3,13 @@ import { help } from '../modules/help'
 import { readFileSync } from 'fs'
 import {Options } from '../../types/options'
 import { getParams } from '../modules/get-params'
+import { check } from '../modules/squirrel-events'
+
+
+// First deal with squirrel arguments
+
+if (check()) process.exit(0)
+
 // Retreive launch arguments. If the user types -h or --help we
 // return the available arguments.
 if (process.argv.indexOf('-h') != -1 || process.argv.indexOf('--help') != -1 || process.argv.length === 0){
