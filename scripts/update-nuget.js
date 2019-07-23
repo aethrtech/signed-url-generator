@@ -2,9 +2,6 @@ const https = require('https'),
 fs = require('fs'),
 join = require('path').join,
 { mkdirRecursive } = require('mkdir-recursive'),
-userAgent = 'mywebula/signed-url-generator',
-package = require('../package.json'),
-AdmZip = require('adm-zip'),
 dir = join(__dirname,'..','vendor','nuget')
 
 function getRelease(url, options,cb){
@@ -17,7 +14,7 @@ function getRelease(url, options,cb){
         res.pipe(ws)
         res.on('error', err => reject(err))
         ws.on('close', () => {
-            console.log('\u001b[32mDownload complete!\u001b[0m')
+            console.log('\u001b[32mNuGet download complete!\u001b[0m')
             return cb()
         })
         res.on('error', err => cb(err))
