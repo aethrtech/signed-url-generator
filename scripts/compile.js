@@ -8,10 +8,12 @@ readdirSync = require('fs').readdirSync,
 { mkdirRecursive } = require('mkdir-recursive'),
 package = require('../package.json'),
 OUT_FILE = `${package.name}-${package.version}.js`,
-{ execP = exec } = require('child_process'),
+execP = require('child_process').exec,
+RCEDIT_PATH = join(__dirname, '..','vendor','squirrel','rcedit.exe'),
+{ platform, arch } = require('os'),
 date = new Date()
 
-let config
+let config, ICON_PATH
 try {
     config = require('../.compile.json')
 } catch(err){
@@ -23,34 +25,42 @@ try {
     }
 }
 
-let {platforms = ['x64','x86','armv6','armv7'], 
+try {
+    ICON_PATH = package.resources.ico
+} catch {
+    ICON_PATH = join(__dirname, '..', 'resources', 'images', 'logo.ico')
+}
+
+let {platforms = ['win', 'macos', 'linux'], 
 archs = ['x64','x86','armv6','armv7'], 
 targets = ['node', 'browser'] } = config
 
 
-function rceditor({ extension }){
+function rceditor(plat, arc, extension ){
     return new Promise((resolve, reject) => {
         try {
-            let RCEDIT_PATH = join(__dirname, '..', 'vendor', 'rcedit', 'rcedit'),
-            productName = package.productName ? package.productName : package.name,
+            let productName = package.productName ? package.productName : package.name,
             author = package.author ? package.author : 'MyWebula Ltd.',
             description = package.description ? package.description : 'A Node.js application packaged into a binary executable.',
-            originalName = `${package.name}.${extension}`,
+            originalName = extension ? `${package.name}-${package.version}.${extension}`:
+            `${package.name}-${package.version}`,
             args = [
                 '--set-product-version',
-                `${package.version}.0`,
+                `"${package.version}.0"`,
                 '--set-version-string',
                 `"ProductName" "${productName}"`,
                 '--set-version-string',
-                `"LegalCopyright" "Copyright © ${author}"`,
+                `"LegalCopyright" "Copyright © ${author}, ${date.getFullYear()}."`,
                 '--set-version-string',
                 `"FileDescription" "${description}"`,
                 '--set-version-string',
-                `"OriginalFilename" ${originalName}`,
+                `"OriginalFilename" "${originalName}"`,
                 '--set-icon',
-                `${iconPath}`
-            ].join(' ')
-            execP(`${RCEDIT_PATH} ${args}`, function execCallback(err, stderr, stdout){
+                `"${ICON_PATH}"`
+            ].join(' '),
+            bin = extension ? join(__dirname, '..','dist', plat, arc, `${package.name}-${package.version}.${extension}`) :
+            join(__dirname, '..','dist', plat, arc, `${package.name}-${package.version}`)
+            execP(`${RCEDIT_PATH} ${bin} ${args}`, function execCallback(err, stderr, stdout){
                 if (err || stderr) return reject(err)
                 return resolve(stdout)
             })
@@ -99,6 +109,17 @@ function build(target){
 
 async function run(cb){
     console.log(`\u001b[36mBuild started...\u001b[0m`)
+    if (!targets || targets.length === 0){
+        targets = ['node']
+    }
+    if (!platforms || platforms.length === 0){
+        let platform
+        if (sysPlatform === 'win32') platform = 'win'
+        if (sysPlatform === 'osx') platform = 'macos'
+        if (sysPlatform === linux) platform = 'linux'
+
+        platforms = [platform]
+    }
 
     for (let target of targets){
         try {
@@ -120,22 +141,36 @@ async function run(cb){
         }
     }
 
-    for (let platform of platforms){
-        if (platform.match(/linux|win/)){
-            for (let arch of archs){
-                if (platform.match(/win/) && arch.match(/x64|x86/) || platform.match(/linux/) && arch.match(/x64|armv6|armv7/)){
-                    await exec([`./out/src/app/index.js`,'--target',platform,'--out-path',`./dist/${platform}/${arch}`])
-                    let files = readdirSync(`./dist/${platform}/${arch}`) 
+    for (let p of platforms){
+        if (p.match(/linux|win/)){
+            for (let a of archs){
+                if (p.match(/win/) && a.match(/x64|x86/) || p.match(/linux/) && a.match(/x64|armv6|armv7/)){
+                    try {
+                        await exec([`./out/src/app/index.js`,'--target',p,'--out-path',`./dist/${p}/${a}`])
+                    } catch (err){
+                        console.warn(`Unable to create package for ${p}-${a}. Skipping...`);
+                        continue;
+                    }
+                    let files = readdirSync(`./dist/${p}/${a}`) 
                     let extension = files[0].split('.').pop()
-                    rename(platform, arch,files[0],extension)
+                    rename(p, a,files[0],extension)
+                    await rceditor( p, a, extension )
                 }
             }
         } else {
-            await exec([`./out/src/app/index.js`,'--target',platform,'--out-path',`./dist/${platform}`])
-            let files = readdirSync(`./dist/${platform}`)
+            try {
+                await exec([`./out/src/app/index.js`,'--target',p,'--out-path',`./dist/${p}`])
+            } catch (err) {
+                return reject(err)
+            }
+            let files = readdirSync(`./dist/${p}`)
             let extension = files[0].split('.').pop() 
             rename(platform,null,files[0],extension)
-            await rceditor({ extension })
+            try {
+                await rceditor( p, a, extension )
+            } catch( err ){
+                return reject(err)
+            }
         }
         
     }
