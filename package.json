@@ -1,6 +1,6 @@
 {
     "name": "signed-url-generator",
-    "title":"Signed URL Generator",
+    "title": "Signed URL Generator",
     "version": "1.0.0",
     "description": "Creates a signed URL using a Custom or Canned Policy for AWS CloudFront.",
     "directories": {
@@ -16,7 +16,7 @@
         "compile": "node ./scripts/compile.js",
         "build": "node ./scripts/build.js",
         "update-squirrel": "node ./scripts/update-squirrel.js",
-        "update-nuget":"node ./scripts/update-nuget.js",
+        "update-nuget": "node ./scripts/update-nuget.js",
         "postinstall": "node ./scripts/postinstall.js"
     },
     "repository": {
@@ -58,6 +58,5 @@
     },
     "squirrel": {
         "tag": "1.9.1"
-    },
-    "nuget":true
+    }
 }
