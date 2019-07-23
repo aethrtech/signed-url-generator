@@ -17,7 +17,7 @@ export const check = function():boolean {
         // console.log('processing squirrel command `%s`', cmd);
         var target = basename(process.execPath);
     
-        if (cmd === '--squirrel-install' || cmd === '--squirrel-updated') {
+        if (cmd.match(/--squirrel-install|--squirrel-updated/i)) {
             run(['--createShortcut=' + target + ''], () => {
                 return true
             });
