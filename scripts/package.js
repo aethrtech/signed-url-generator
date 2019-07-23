@@ -17,16 +17,16 @@ fs.readFile(TEMPLATE_PATH, 'utf8', (err, data) => {
     .replace('<%- authors %>', package.author)
     .replace('<%- description %>',package.description)
     .replace('<%- copyright %>', `© ${package.author}, ${date.getFullYear()}`)
-    .replace(/<%- exe %>/g,`${package.name}-${package.version}.exe`)
+    .replace('src="<%- exe %>"',`src="dist\\win\\x64\\${package.name}-${package.version}.exe"`)
+    .replace('<%- exe %>',`${package.name}-${package.version}.exe`)
 
-    fs.writeFile(join(__dirname, '..','test.nuspec'), data, 'utf8', err => {
+    fs.writeFile(join(__dirname, '..','package' ,'test.nuspec'), data, 'utf8', err => {
         if (err) return console.log(err)
 
-        exec(`${NUGET_EXE} pack ${join(__dirname, '..', 'test.nuspec')}`, (err, stdout, stderr) => {
+        exec(`${NUGET_EXE} pack ${join(__dirname, '..', 'package', 'test.nuspec')} -BasePath ${join(__dirname, '..')} -OutputDirectory ${join(__dirname, '..', 'package')}`, (err, stdout, stderr) => {
             if (err) return console.error(err)
             if (stderr) return console.error(stderr)
-            console.log(stdout)
-            console.log('complete') 
+            console.log(`\u001b[32m${stdout}\u001b[0m`)
 
         })
     })
