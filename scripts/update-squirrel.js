@@ -114,6 +114,7 @@ async function update(){
         } catch(err) {
             return console.error(`\u001b[31mError: Unable to extract the latest version of Squirrel.\n${err}\u001b[0m`)
         }
+        console.log('\u001b[32mSquirrel download complete!\u001b[0m')
     })
 
 }
