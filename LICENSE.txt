@@ -1,4 +1,4 @@
-BSD 3-Clause Licence
+BSD 3-Clause License
 
 Copyright 2019 MyWebula Ltd
 
