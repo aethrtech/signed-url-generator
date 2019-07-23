@@ -13,3 +13,5 @@ test/policies
 .cache
 /vendor
 .markdownlint.json
+package
+releases
