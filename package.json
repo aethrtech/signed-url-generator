@@ -13,6 +13,7 @@
         "testWithCoverage": "nyc -r lcov -e .ts -x \"*.spec.ts\" mocha -r ts-node/register tests/*.spec.ts && nyc report",
         "prestart": "tsc -b ./tsconfig.json",
         "prebuild": "tsc -b ./tsconfig.json",
+        "precompile": "tsc -b ./tsconfig.json",
         "start": "node ./out/index.js",
         "compile": "node ./scripts/compile.js",
         "build": "node ./scripts/build.js",
