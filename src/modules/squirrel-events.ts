@@ -10,26 +10,27 @@ const run = function(args:string[], done:Function){
     }).on('close', done)
 }
 
-export const check = function():boolean {
+export const check = function(cb):boolean {
 
     if (process.platform === 'win32') {
-        var cmd = process.argv[1];
-        // console.log('processing squirrel command `%s`', cmd);
+        var cmd = process.argv.find(arg => arg.match(/--squirrel/));
+        if (!cmd) return cb(false)
+        console.log('processing squirrel command `%s`', cmd);
         var target = basename(process.execPath);
     
         if (cmd.match(/--squirrel-install|--squirrel-updated/i)) {
             run(['--createShortcut=' + target + ''], () => {
-                return true
+                return cb(true)
             });
             
         }
         if (cmd === '--squirrel-uninstall') {
             run(['--removeShortcut=' + target + ''], () => {
-                return true
+                return cb(true)
             });
         }
         if (cmd === '--squirrel-obsolete') {
-            return true
+            return cb(true)
         }
     }
     return false
