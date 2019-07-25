@@ -5,11 +5,12 @@
         "removeComments": true,
         "preserveConstEnums": true,
         "sourceMap": true,
-        "outDir": "out"
+        "outDir": "out",
+        "resolveJsonModule": true
     },
     "types":["node"],
     "exclude": [
         "node_modules",
-        "tests"
+        "test"
     ]
 }
