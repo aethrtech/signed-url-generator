@@ -8,6 +8,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description><%- description %></description>
     <copyright><%- copyright %></copyright>
+    <iconUrl><%- icon_url %></iconUrl>
   </metadata>
   <files>
     <file src="LICENSE.txt" target="lib\net45\LICENSE.txt" />
