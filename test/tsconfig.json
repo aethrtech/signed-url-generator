@@ -1,6 +1,9 @@
 {
     "extends": "../tsconfig",
-    "include": [
-        "**/*.spec.ts"
+    "compilerOptions": {
+        "resolveJsonModule": true
+    },
+    "files": [
+        "helpers/get-binary.spec.ts"
     ]
 }

@@ -1,17 +1,14 @@
 const Bundler = require('parcel-bundler'),
 { exec } = require('pkg'),
-renameSync = require('fs').renameSync,
 readdirSync = require('fs').readdirSync,
 package = require('../package.json'),
 OUT_FILE = `${package.name}-${package.version}.js`,
 { platform, arch } = require('os'),
 createInstaller = require('./build'),
-
-homedir = require('os').homedir,
-rename = require('fs').rename,
 rceditor = require('./rceditor'),
 getBinary = require('./get-binary'),
-PKG_FETCH = 'https://api.github.com/repos/zeit/pkg-fetch/releases/latest'
+rename = require('./rename-file'),
+PKG_FETCH = 'https://api.github.com/repos/zeit/pkg-fetch/releases'
 date = new Date()
 
 let config
@@ -26,15 +23,7 @@ archs = ['x64','x86','armv6','armv7'],
 targets = ['node', 'browser'] } = config
 
 
-function rename(platform,arch,file,extension){
-    if (extension.length >= 3 && arch){ 
-        renameSync(`./dist/${platform}/${arch}/${file}`,`./dist/${platform}/${arch}/${package.name}-${package.version}.${extension}`)
-    } else if (extension.length >= 3) {
-        renameSync(`./dist/${platform}/${file}`,`./dist/${platform}/${package.name}-${package.version}.${extension}`)
-    } else {
-        renameSync(`./dist/${platform}/${file}`,`./dist/${platform}/${package.name}-${package.version}`)
-    }
-}
+
 
 function build(target){
     return new Promise(function promise(resolve,reject){
@@ -66,7 +55,7 @@ function build(target){
 async function compile(cb){
     console.log(`\u001b[36mBuild started...\u001b[0m`)
     if (!targets || targets.length === 0){
-        targets = ['node']
+        targets = [`node${process.version.match(/\d(\d)?/)[0]}`]
     }
     if (!platforms || platforms.length === 0){
         let platform
@@ -78,76 +67,76 @@ async function compile(cb){
     }
 
     for (let target of targets){
+
         try {
-            await build(target)
+            await build(target.match(/node/) ? target.match(/node/)[0] : target)
         } catch (err){
             return cb(err)
         }
-        console.info(` build target: \u001b[36m${target}\u001b[32m complete! ✔\u001b[0m`)
-    }
-
-    // If targeting just the browser, we should exit now
-    if (!platforms) return cb('Build complete!')
-    // We need to build for node regardless, even if the user hasn't specified it.
-    if (targets.indexOf('node') === -1 && target.length > 1 && platforms.length !== 0){
-        try {
-            await build('node')
-        } catch(err){
-            return cb(err)
+        // If targeting just the browser, we should exit now
+        if (!platforms) return cb('Build complete!')
+        // We need to build for node regardless, even if the user hasn't specified it.
+        if (targets.find(val => val.match(/node/)) && targets.length > 1 && platforms.length !== 0){
+            try {
+                await build('node')
+            } catch(err){
+                return cb(err)
+            }
         }
-    }
 
-    for (let p of platforms){
-        if (p.match(/linux|win/)){
-            for (let a of archs){
-                if (p.match(/win/) && a.match(/x64|x86/) || p.match(/linux/) && a.match(/x64|armv6|armv7/)){
-                    try {
-                        let pkgBin = await getBinary(PKG_FETCH, platform, arch, target)
-                        await rceditor(pkgBin)
-                        await exec([`./out/src/app/index.js`,'--target',p,'--out-path',`./dist/${p}/${a}`])
-                    } catch (err){
-                        console.warn(`Unable to create package for ${p}-${a}.\n${err}\nSkipping...`);
-                        continue
-                    }
-                    let files = readdirSync(`./dist/${p}/${a}`) 
-                    let extension = files[0].split('.').pop()
-                    try {
-                        // rename(p, a,files[0],extension)
-                        // await rceditor( p, a, extension )
-                    } catch(err){
-                        console.warn(`Unable to modify executable for ${p}-${a}.\n${err}\nSkipping...`);
-                        continue
-                    }
-                    
-                    // create the release files if windows
-                    if (!p.match(/win/) || process.argv.indexOf('--no-install') !== -1) continue
-                    try {
-                        await createInstaller(p, a )
-                    } catch(err) {
-                        console.warn(`Unable to create installer for ${p}-${a}.\n${err}\nSkipping...`);
-                        continue
+        for (let p of platforms){
+            if (p.match(/linux|win/)){
+                for (let a of archs){
+                    if (p.match(/win/) && a.match(/x64|x86/) || p.match(/linux/) && a.match(/x64|armv6|armv7/)){
+                        try {
+                            let pkgBin = await getBinary(PKG_FETCH, p, a, target)
+                            await rceditor(pkgBin)
+                            await exec([`./out/src/app/index.js`,'--target',p,'--out-path',`./dist/${p}/${a}`])
+                        } catch (err){
+                            console.warn(`Unable to create package for ${p}-${a}.\n${err}\nSkipping...`);
+                            continue
+                        }
+                        let files = readdirSync(`./dist/${p}/${a}`) 
+                        let extension = files[0].split('.').pop()
+                        try {
+                            await rename(p, a,files[0],extension)
+                        } catch(err){
+                            console.warn(`Unable to modify executable for ${p}-${a}.\n${err}\nSkipping...`);
+                            continue
+                        }
+                        
+                        // create the release files if windows
+                        if (!p.match(/win/) || process.argv.indexOf('--no-install') !== -1) continue
+                        let execName = `${package.productName ? package.productName.replace(/\s/g,'') : package.name}.exe`
+                        try {
+                            await createInstaller(`./dist/${p}/${a}/${execName}`, execName)
+                        } catch(err) {
+                            console.warn(`Unable to create installer for ${p}-${a}.\n${err}\nSkipping...`);
+                            continue
+                        }
                     }
                 }
+            } else {
+                try {
+                    await exec([`./out/src/app/index.js`,'--target',p,'--out-path',`./dist/${p}`])
+                } catch (err) {
+                    return reject(err)
+                }
+                let files = readdirSync(`./dist/${p}`)
+                let extension = files[0].split('.').pop() 
+                // rename(platform,null,files[0],extension)
+                try {
+                    // await rceditor( p, a, extension )
+                } catch( err ){
+                    return reject(err)
+                }
             }
-        } else {
-            try {
-                await exec([`./out/src/app/index.js`,'--target',p,'--out-path',`./dist/${p}`])
-            } catch (err) {
-                return reject(err)
-            }
-            let files = readdirSync(`./dist/${p}`)
-            let extension = files[0].split('.').pop() 
-            // rename(platform,null,files[0],extension)
-            try {
-                // await rceditor( p, a, extension )
-            } catch( err ){
-                return reject(err)
-            }
+            
         }
-        
+        console.info(` build target: \u001b[36m${target}\u001b[32m complete! ✔\u001b[0m`)
+
+
     }
-
-
 
 }
 

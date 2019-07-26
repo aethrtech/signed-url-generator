@@ -7,13 +7,13 @@ rename = require('fs').rename,
 unlink = require('fs').unlink,
 package = require('../package.json')
 
-function getBinary(url, platform, arch, target){
+module.exports = function getBinary(url, platform, arch, target){
     return new Promise(async (resolve,reject)=> {
 
         let PKG_PATH = join(homedir(), '.pkg-cache')
 
         try {
-            return await findCached(PKG_PATH, platform, arch, target)
+            return resolve(await findCached(PKG_PATH, platform, arch, target))
         } catch(err){
             if (err.errcode !== -4058) return reject(err)
             if (err.errcode === -4058) console.warn('Warning: Unable to retrieve cached packages. Proceeding to download...')

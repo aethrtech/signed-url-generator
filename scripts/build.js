@@ -9,7 +9,8 @@ TEMPLATE_PATH = join(__dirname, '..','template.nuspec'),
 date = new Date()
 
 
-module.exports =  function createInstaller(platform, arch){
+module.exports =  function createInstaller(source, exeName, options){
+    const spec = join(__dirname, '..','package' ,`${package.name}.nuspec`)
     return new Promise((resolve, reject) => {
         readFile(TEMPLATE_PATH, 'utf8', async (err, data) => {
             if (err) return reject(err)
@@ -21,7 +22,8 @@ module.exports =  function createInstaller(platform, arch){
             .replace('<%- authors %>', package.author)
             .replace('<%- description %>',package.description)
             .replace('<%- copyright %>', `${package.author}, ${date.getFullYear()}`)
-            .replace('src="<%- exe %>"',`src="dist\\${platform}\\${arch}\\index.exe"`)
+            .replace('src="<%- exe %>"',`src="${source}"`)
+            .replace('<%- exe %>', exeName.match('exe') ? exeName : `${execName}.exe`)
             .replace('<%- icon_url %>', `https://raw.githubusercontent.com/mywebula/signed-url-generator/alpha/resources/images/logo.ico?token=AHEW24FGECZGETJEGGZFB4C5IGL6C`)
             
             try {
@@ -29,19 +31,20 @@ module.exports =  function createInstaller(platform, arch){
             } catch (err){
                 return reject(err)
             }
-            writeFile(join(__dirname, '..','package' ,`${package.name}-${package.version}.nuspec`), data, 'utf8', err => {
+            writeFile(spec, data, 'utf8', err => {
                 if (err) return reject(err)
-        
-                exec(`${NUGET_EXE} pack ${join(__dirname, '..', 'package', 'test.nuspec')} -BasePath ${join(__dirname, '..')} -OutputDirectory ${join(__dirname, '..', 'package')}`, (err, stdout, stderr) => {
+
+                exec(`${NUGET_EXE} pack ${spec} -BasePath ${join(__dirname, '..')} -OutputDirectory ${join(__dirname, '..', 'package')}`, (err, stdout, stderr) => {
                     if (err) return reject(err)
                     if (stderr) return reject(stderr)
                     console.log(`\u001b[32m${stdout}\u001b[0m`)
+
                     let args = [
-                        `--releasify="${join(__dirname, '..', 'package', package.name.replace(/-/g,''))}.${package.version}.nupkg"`,
-                         `--releaseDir="${join(__dirname, '..', 'dist', platform, arch)}"`,
+                        `--releasify="${join(__dirname, '..', 'package', `${package.productName ? package.productName.replace(/\s/g,'') : package.name}.${package.version}.nupkg`)}"`,
+                         `--releaseDir="${options && options.outDir ? options.outDir : source.replace(/(\\|\/)([^(\\|\/)]*$)/,'')}"`,
                          `--icon="${join(__dirname, '..', 'resources', 'images', 'logo.ico')}"`,
                          `--setupIcon="${join(__dirname, '..', 'resources', 'images', 'logo.ico')}"`,
-                         `--bootstrapperExe="${join(__dirname, '..', 'vendor', 'squirrel', 'setup.exe')}}"`
+                         `--bootstrapperExe="${join(__dirname, '..', 'vendor', 'squirrel', 'setup.exe')}`
 
                     ].join(' ')
 

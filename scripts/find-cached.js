@@ -1,6 +1,5 @@
 const readdir = require('fs').readdir,
 join = require('path').join
-
 module.exports = function findCached(path, platform, arch, target){
     return new Promise((resolve, reject) =>{
 
@@ -19,7 +18,7 @@ module.exports = function findCached(path, platform, arch, target){
 
 
                 let pkgBin = binaries.find(bin => bin.match(exp))
-                pkgBin ? resolve(pkgBin) : reject({errcode:-4058})
+                pkgBin ? resolve(join(path, tag, pkgBin)) : reject({errcode:-4058})
 
             })
         })
