@@ -4,11 +4,12 @@ import { readFileSync } from 'fs'
 import {Options } from '../../types/options'
 import { getParams } from '../modules/get-params'
 import { check } from '../modules/squirrel-events'
+import * as pack from '../../package.json'
 
 
 // First deal with squirrel arguments
 
-check( function checked(bool){
+check(pack, function checked(bool){
     if (bool) return;
    
     app()
