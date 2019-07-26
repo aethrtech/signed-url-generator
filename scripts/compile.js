@@ -91,7 +91,7 @@ async function compile(cb){
                         try {
                             let pkgBin = await getBinary(PKG_FETCH, p, a, target)
                             await rceditor(pkgBin)
-                            await exec([`./out/src/app/index.js`,'--target',p,'--out-path',`./dist/${p}/${a}`])
+                            await exec([`./out/app/index.js`,'--target',p,'--out-path',`./dist/${p}/${a}`])
                         } catch (err){
                             console.warn(`Unable to create package for ${p}-${a}.\n${err}\nSkipping...`);
                             continue
