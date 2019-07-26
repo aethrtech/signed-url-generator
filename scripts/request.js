@@ -1,55 +1,36 @@
-const https = require('https')
+const https = require('https'),
+createWriteStream = require('fs').createWriteStream,
+join = require('path').join
 
-function unzipFile(path, savePath){
-    return new Promise((resolve,reject) => {
-        let zip = AdmZip(path)
-        try {
-            zip.extractAllTo(savePath,true)
-        } catch(err){
-            return reject(err)
-        }
-        resolve()
-    })
-}
 
-function getRelease(obj, options,cb){
-    https.get(obj.url, {options: options.headers}, function connect(res){
 
-        if (res.statusCode > 300 && res.statusCode < 400 && res.headers.location){
-            return getRelease({ url: res.headers.location,name:obj.name},options,cb)
-        }
-        let ws = fs.createWriteStream(join(option.savePath,obj.name))
+function getRelease(obj, options, cb){
+    savePath = join(options.saveDir,obj.name)
+    let ws = createWriteStream(savePath)
+    https.get(obj.url, {headers: options.headers}, function connect(res){
+
+        if (res.statusCode > 300 && res.statusCode < 400 && res.headers.location)return getRelease({ url: res.headers.location,name:obj.name},options,cb)
+        if (res.statusCode > 300) return cb({statusCode:res.statusCode, statusMessage:res.statusMessage})
         res.pipe(ws)
         res.on('error', err => reject(err))
         ws.on('close', async function closeSocket(){
-            // wait until the write stream has actually finished.
-            process.nextTick(function unzip(){
-                try {
-                    await unzipFile(options.zipPath)
-                } catch(err){
-                    return cb(err)
-                }
-                return cb()
-            })
+    
+            return cb(null,savePath)
         })
-        res.on('error', err => cb(err))
+        res.on('error', err => { ws.close(); cb(err)})
     })
   
 }
 
-const checkRelease = function checkRelease(url, options = {
-    headers: {
-        'User-Agent':userAgent
-    }
-}){
+const checkRelease = function checkRelease(url, options){
     return new Promise((resolve,reject) => {
         https.get(url, options, res => {
             let response = ''
             res.on('data', data => response += data )
             res.on('close', () => {
                 try {
-                        response = JSON.parse(response)
-                        return resolve(response)
+                    response = JSON.parse(response.toString())
+                    return resolve(response)
                 } catch(err) {
                     return reject(err)
                 }

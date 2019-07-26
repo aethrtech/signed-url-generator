@@ -424,7 +424,7 @@ console.log(url)
         }
 
 
-        var url = CreateSignedUrl.generate(policy, baseUrl, keyPairId, privateKey, query).canned()
+        var url = SignedUrl.generate(policy, baseUrl, keyPairId, privateKey, query).canned()
 
         window.alert(url)
 
@@ -484,7 +484,7 @@ console.log(url)
     }
 
 
-    var url = CreateSignedUrl.generate(policy, baseUrl, keyPairId, privateKey, query).custom()
+    var url = SignedUrl.generate(policy, baseUrl, keyPairId, privateKey, query).custom()
 
     window.alert(url)
 
