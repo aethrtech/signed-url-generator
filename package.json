@@ -1,6 +1,6 @@
 {
     "name": "signed-url-generator",
-    "productName":"Signed URL Generator",
+    "productName": "Signed URL Generator",
     "title": "Signed URL Generator",
     "version": "1.0.0",
     "description": "Creates a signed URL using a Custom or Canned Policy for AWS CloudFront.",
