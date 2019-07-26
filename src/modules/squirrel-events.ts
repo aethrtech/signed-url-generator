@@ -10,10 +10,10 @@ const run = function(args:string[], done:Function){
     }).on('close', done)
 }
 
-export const check = function(cb):boolean {
+export const check = function(cb:Function):boolean {
 
     if (process.platform === 'win32') {
-        var cmd = process.argv.find(arg => arg.match(/--squirrel/));
+        let cmd = process.argv.find(arg => arg.match(/--squirrel/));
         if (!cmd) return cb(false)
         console.log('processing squirrel command `%s`', cmd);
         var target = basename(process.execPath);
@@ -33,5 +33,5 @@ export const check = function(cb):boolean {
             return cb(true)
         }
     }
-    return false
+    return cb(false)
 }
