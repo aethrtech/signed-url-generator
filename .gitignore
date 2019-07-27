@@ -16,3 +16,4 @@ test/policies
 package
 releases
 .compile.json
+/.cert

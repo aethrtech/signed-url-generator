@@ -3,12 +3,12 @@ const Bundler = require('parcel-bundler'),
 readdirSync = require('fs').readdirSync,
 package = require('../package.json'),
 OUT_FILE = `${package.name}-${package.version}.js`,
-{ platform, arch } = require('os'),
 createInstaller = require('./build'),
 rceditor = require('./rceditor'),
 getBinary = require('./get-binary'),
 rename = require('./rename-file'),
-PKG_FETCH = 'https://api.github.com/repos/zeit/pkg-fetch/releases'
+PKG_FETCH = 'https://api.github.com/repos/zeit/pkg-fetch/releases',
+compileOptions = require('../.compile.json'),
 date = new Date()
 
 let config
@@ -27,7 +27,7 @@ targets = ['node', 'browser'] } = config
 
 function build(target){
     return new Promise(function promise(resolve,reject){
-        console.log(`building for target: \u001b[36m${target}\u001b[0m`)
+        console.log(`building for target: \u001b[1;36m${target}\u001b[0m`)
         let path = target === 'browser' ? './src/modules/index.ts' : './src/app/index.ts',
         bundler = new Bundler(path,{
             outDir:`./dist/${target}`,
@@ -74,7 +74,7 @@ async function compile(cb){
             return cb(err)
         }
         // If targeting just the browser, we should exit now
-        if (!platforms) return cb('Build complete!')
+        if (!platforms) return cb('\u001b[1;32mBuild complete!\u001b[0m')
         // We need to build for node regardless, even if the user hasn't specified it.
         if (targets.find(val => val.match(/node/)) && targets.length > 1 && platforms.length !== 0){
             try {
@@ -93,7 +93,7 @@ async function compile(cb){
                             await rceditor(pkgBin)
                             await exec([`./out/app/index.js`,'--target',p,'--out-path',`./dist/${p}/${a}`])
                         } catch (err){
-                            console.warn(`Unable to create package for ${p}-${a}.\n${err}\nSkipping...`);
+                            console.warn(`\u001b[1;31mUnable to create package for ${p}-${a}.\n${err}\nSkipping...\u001b[0m`);
                             continue
                         }
                         let files = readdirSync(`./dist/${p}/${a}`) 
@@ -101,17 +101,19 @@ async function compile(cb){
                         try {
                             await rename(p, a,files[0],extension)
                         } catch(err){
-                            console.warn(`Unable to modify executable for ${p}-${a}.\n${err}\nSkipping...`);
+                            console.warn(`\u001b[1;33mUnable to modify executable for ${p}-${a}.\n${err}\nSkipping...\u001b[0m`);
                             continue
                         }
                         
                         // create the release files if windows
                         if (!p.match(/win/) || process.argv.indexOf('--no-install') !== -1) continue
                         let execName = `${package.productName ? package.productName.replace(/\s/g,'') : package.name}.exe`
+                        let out
                         try {
-                            await createInstaller(`./dist/${p}/${a}/${execName}`, execName)
+                            out = await createInstaller(`./dist/${p}/${a}/${execName}`, execName, compileOptions)
+                            if (out) console.log(`\u001b[1;36m${out}\u001b[0m`)
                         } catch(err) {
-                            console.warn(`Unable to create installer for ${p}-${a}.\n${err}\nSkipping...`);
+                            console.warn(`\u001b[1;33m1Unable to create installer for ${p}-${a}.\n${err}\nSkipping...\u001b[0m`);
                             continue
                         }
                     }

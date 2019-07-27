@@ -46,9 +46,13 @@ module.exports =  function createInstaller(source, exeName, options){
                          `--setupIcon="${join(__dirname, '..', 'resources', 'images', 'logo.ico')}"`,
                          `--bootstrapperExe="${join(__dirname, '..', 'vendor', 'squirrel', 'setup.exe')}`
 
-                    ].join(' ')
+                    ]
 
-                    exec(`${join(__dirname,'..','vendor','squirrel','squirrel.com')} ${args}`, (err, stderr,stdout) => {
+                    if (options.sign){
+                        args.push(`-n "/a /f ${join(__dirname, '..', '.cert', 'cert.pfx')} ${ options.sign.password ? '/p' + options.sign.password : ''} /fd sha256 /tr http://timestamp.digicert.com /td sha256"`)
+                    }
+
+                    exec(`${join(__dirname,'..','vendor','squirrel','squirrel.com')} ${args}`, (err, stdout,stderr) => {
                         if (err) return reject(err)
                         if (stderr && stderr !== '\r\n') return reject(stderr)
                         return resolve(stdout)
