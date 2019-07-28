@@ -6,25 +6,24 @@ import { getParams } from '../modules/get-params'
 import { check } from '../modules/squirrel-events'
 import * as pack from '../../package.json'
 
-let compileOptions
-
 (async function(){
 
     try {
-        await import('../../.compile.json')
+       return await import('../../.compile.json')
     } catch {
-        compileOptions = { ...pack, ...{ProductName : 'Signed URL Generator'}}
+        return { ...pack, ...{ProductName : 'Signed URL Generator'}}
     }
 
-})()
+})().then(compileOptions => {
+    // First deal with squirrel arguments
+    check({...compileOptions.rcOptions, ...pack}, function checked(bool){
+        if (bool) return;
+    
+        app()
 
-// First deal with squirrel arguments
-check(compileOptions, function checked(bool){
-    if (bool) return;
-   
-    app()
-
+    })  
 })
+.catch(err => { throw new Error(err) })
 
 function app(){
 

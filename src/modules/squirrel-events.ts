@@ -13,14 +13,14 @@ run = function(args:string[], done:Function){
     .on('error', err => { console.log(err); done()})
 }
 
-export const check = function({productName, version} , cb:Function):boolean {
+export const check = function({ProductName, version}:any , cb:Function):boolean {
 
     if (process.platform === 'win32') {
         let cmd = process.argv.find(arg => arg.match(/--squirrel/));
         if (!cmd) return cb(false)
         console.log('processing squirrel command `%s`', cmd);
         let exe = basename(process.execPath)
-        let target = join(homedir(),'AppData','Local',productName,`app-${version}`, exe)
+        let target = join(homedir(),'AppData','Local',ProductName.replace(/\s/g, ''),`app-${version}`, exe)
     
         if (cmd.match(/--squirrel-install|--squirrel-updated/i)) {
             run(['--createShortcut=' + target + ''], () => {

@@ -5,23 +5,16 @@ writeFile = require('fs').writeFile,
 package = require('../package.json'),
 exec = require('child_process').exec,
 NUGET_EXE = join(__dirname, '..', 'vendor', 'nuget', 'nuget.exe'),
-TEMPLATE_PATH = join(__dirname, '..','template.nuspec'),
-resolve = require('path').resolve,
 date = new Date()
 
 
-module.exports =  function createInstaller(source, exeName, options){
-
-    let compileOptions, pkg
-    try {
-        compileOptions = require('../.compile.json')
-    pkg = {...package, ...compileOptions.rcOptions}
-    } catch {
-        compileOptions = {
-            title: 'MyWebula Application', 
-    setIcon: 'https://raw.githubusercontent.com/mywebula/signed-url-generator/alpha/resources/images/logo-3.ico?token=AHEW24D4PZTVIP7JU5JVGJK5IYSJY'}
-        pkg = {...package, ...compileOptions}
-    }
+module.exports =  function createInstaller(source, TEMPLATE_PATH, options = {
+    title: 'MyWebula Application', 
+    setIcon: 'https://raw.githubusercontent.com/mywebula/signed-url-generator/alpha/resources/images/logo-3.ico?token=AHEW24D4PZTVIP7JU5JVGJK5IYSJY',
+    description: 'MyWebula Node.js Application',
+    authors: 'MyWebula Ltd.',
+    version: '1.0.0'
+}){
 
     const spec = join(__dirname, '..','package' ,`${package.name}.nuspec`)
     return new Promise((resolve, reject) => {
@@ -29,15 +22,15 @@ module.exports =  function createInstaller(source, exeName, options){
             if (err) return reject(err)
         
             data = data
-            .replace('<%- name %>',pkg.title.replace(/\s/g,''))
-            .replace('<%- title %>', pkg.title)
-            .replace('<%- appversion %>', `${pkg.version}.0`)
-            .replace('<%- authors %>', pkg.author)
-            .replace('<%- description %>',pkg.description)
-            .replace('<%- copyright %>', `${pkg.author}, ${date.getFullYear()}.`)
-            .replace('src="<%- exe %>"',`src="${source}"`)
-            .replace('<%- exe %>', exeName.match('exe') ? exeName : `${execName}.exe`)
-            .replace('<%- icon_url %>', pkg.iconUrl)
+            .replace('<%- name %>',options.title.replace(/\s/g,''))
+            .replace('<%- title %>', options.title)
+            .replace('<%- appversion %>', `${options.version}.0`)
+            .replace('<%- authors %>', options.author)
+            .replace('<%- description %>',options.description)
+            .replace('<%- copyright %>', `${options.author}, ${date.getFullYear()}.`)
+            .replace('src="<%- exe %>"',`src="${source.match(/exe/) ? source : source + '.exe'}"`)
+            .replace('<%- exe %>', options.OriginalFilename.match('exe') ? options.OriginalFilename : `${options.OriginalFilename}.exe`)
+            .replace('<%- icon_url %>', options.iconUrl)
             
             try {
                 await mkdirRecursive(join(__dirname, '..','package'))
@@ -53,10 +46,10 @@ module.exports =  function createInstaller(source, exeName, options){
                     console.log(`\u001b[32m${stdout}\u001b[0m`)
 
                     let args = [
-                        `--releasify="${join(__dirname, '..', 'package', `${pkg.ProductName ? pkg.ProductName.replace(/\s/g,'') : pkg.name}.${pkg.version}.nupkg`)}"`,
+                        `--releasify="${join(__dirname, '..', 'package', `${options.ProductName ? options.ProductName.replace(/\s/g,'') : options.name}.${options.version}.nupkg`)}"`,
                          `--releaseDir="${options && options.outDir ? options.outDir : source.replace(/(\\|\/)([^(\\|\/)]*$)/,'')}"`,
-                         `--icon="${join(__dirname, '..', pkg.setIcon)}"`,
-                         `--setupIcon="${join(__dirname, '..',pkg.setIcon)}"`,
+                         `--icon="${join(__dirname, '..', options.setIcon)}"`,
+                         `--setupIcon="${join(__dirname, '..',options.setIcon)}"`,
                          `--bootstrapperExe="${join(__dirname, '..', 'vendor', 'squirrel', 'setup.exe')}`
 
                     ]

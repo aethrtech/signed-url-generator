@@ -8,8 +8,7 @@ rceditor = require('./rceditor'),
 getBinary = require('./get-binary'),
 rename = require('./rename-file'),
 PKG_FETCH = 'https://api.github.com/repos/zeit/pkg-fetch/releases',
-compileOptions = require('../.compile.json'),
-date = new Date()
+join = require('path').join
 
 let config
 try {
@@ -95,8 +94,14 @@ async function compile(cb){
                     }
                     let files = readdirSync(`./dist/${p}/${a}`) 
                     let extension = files[0].split('.').pop()
+                    let execName = config.rcOptions.ProductName ? config.rcOptions.ProductName.replace(/\s/g,'') : package.name
+                    let paths = {
+                        oldPath: join(__dirname, '..', 'dist',p,a,files[0]),
+                        newPath: join(__dirname, '..', 'dist',p,a,`${execName}.${extension}`)
+                    }
+
                     try {
-                        await rename(p, a,files[0],extension)
+                        await rename(paths)
                     } catch(err){
                         console.warn(`\u001b[1;33mUnable to modify executable for ${p}-${a}.\n${err}\nSkipping...\u001b[0m`);
                         continue
@@ -104,10 +109,10 @@ async function compile(cb){
                     
                     // create the release files if windows
                     if (!p.match(/win/) || process.argv.indexOf('--no-install') !== -1) continue
-                    let execName = `${package.productName ? package.productName.replace(/\s/g,'') : package.name}.exe`
+     
                     let out
                     try {
-                        out = await createInstaller(`./dist/${p}/${a}/${execName}`, execName, compileOptions)
+                        out = await createInstaller(`./dist/${p}/${a}/${execName}`, join(__dirname, '..','template.nuspec'), {...package,...config.rcOptions})
                         if (out) console.log(`\u001b[1;36m${out}\u001b[0m`)
                     } catch(err) {
                         console.warn(`\u001b[1;33m1Unable to create installer for ${p}-${a}.\n${err}\nSkipping...\u001b[0m`);
