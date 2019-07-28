@@ -2,6 +2,7 @@ import { resolve, dirname, basename } from 'path'
 import { spawn } from 'child_process'
 import { join } from 'path'
 import { homedir } from 'os'
+import { readdir, unlink, appendFileSync } from 'fs'
 
 const run = function(args:string[], done:Function){
 
@@ -12,7 +13,12 @@ const run = function(args:string[], done:Function){
         detached: true
     }).on('close', () => done())
     .on('error', err => done(err))
+}, 
+
+writeError = function writeError(err):void{
+    return appendFileSync('c:/users/farhad/desktop/error.txt', err + '\n')
 }
+
 
 export const check = function({ProductName, version}:any , cb:Function):boolean {
 
@@ -31,7 +37,7 @@ export const check = function({ProductName, version}:any , cb:Function):boolean 
         }
         if (cmd.match(/--squirrel-uninstall/i)) {
             run(['--removeShortcut=' + target + ''], err => {
-                return cb(err, true)
+                if (err) return cb(err, true)
             });
             
         }
