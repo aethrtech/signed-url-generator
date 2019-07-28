@@ -1,16 +1,17 @@
-const { resolve, dirname, basename } = require('path'),
-spawn = require('child_process').spawn,
-join = require('path').join,
-{ homedir } = require('os'),
+import { resolve, dirname, basename } from 'path'
+import { spawn } from 'child_process'
+import { join } from 'path'
+import { homedir } from 'os'
 
-run = function(args:string[], done:Function){
+const run = function(args:string[], done:Function){
 
     var updateExe = resolve(dirname(process.execPath), '..', 'Update.exe')
     console.log('Spawning `%s` with args `%s`', updateExe, args)
+
     spawn(updateExe, args, {
         detached: true
     }).on('close', () => done())
-    .on('error', err => { console.log(err); done()})
+    .on('error', err => done(err))
 }
 
 export const check = function({ProductName, version}:any , cb:Function):boolean {
@@ -23,19 +24,21 @@ export const check = function({ProductName, version}:any , cb:Function):boolean 
         let target = join(homedir(),'AppData','Local',ProductName.replace(/\s/g, ''),`app-${version}`, exe)
     
         if (cmd.match(/--squirrel-install|--squirrel-updated/i)) {
-            run(['--createShortcut=' + target + ''], () => {
-                return cb(true)
+            run(['--createShortcut=' + target + ''], err => {
+                return cb(err, true)
             });
             
         }
-        if (cmd === '--squirrel-uninstall') {
-            run(['--removeShortcut=' + target + ''], () => {
-                return cb(true)
+        if (cmd.match(/--squirrel-uninstall/i)) {
+            run(['--removeShortcut=' + target + ''], err => {
+                return cb(err, true)
             });
+            
         }
         if (cmd === '--squirrel-obsolete') {
             return cb(true)
         }
+    } else {
+        return cb(false)
     }
-    return cb(false)
 }

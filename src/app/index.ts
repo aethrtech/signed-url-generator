@@ -16,7 +16,8 @@ import * as pack from '../../package.json'
 
 })().then(compileOptions => {
     // First deal with squirrel arguments
-    check({...compileOptions.rcOptions, ...pack}, function checked(bool){
+    check({...compileOptions.rcOptions, ...pack}, function checked(err:string, bool:boolean){
+        if (err) console.error(`\u001b[1;31m${err}\u001b[0m`)
         if (bool) return;
     
         app()
