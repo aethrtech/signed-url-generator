@@ -1,6 +1,7 @@
 const https = require('https'),
 createWriteStream = require('fs').createWriteStream,
-join = require('path').join
+join = require('path').join,
+fs = require('fs')
 
 
 
@@ -15,7 +16,10 @@ function getRelease(obj, options, cb){
         res.on('error', err => reject(err))
         ws.on('close', async function closeSocket(){
     
-            return cb(null,savePath)
+            fs.access(savePath,err => {
+                if (err) console.log(err)
+                return cb(null,savePath)
+            })
         })
         res.on('error', err => { ws.close(); cb(err)})
     })

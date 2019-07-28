@@ -6,10 +6,20 @@ import { getParams } from '../modules/get-params'
 import { check } from '../modules/squirrel-events'
 import * as pack from '../../package.json'
 
+let compileOptions
+
+(async function(){
+
+    try {
+        await import('../../.compile.json')
+    } catch {
+        compileOptions = { ...pack, ...{ProductName : 'Signed URL Generator'}}
+    }
+
+})()
 
 // First deal with squirrel arguments
-
-check(pack, function checked(bool){
+check(compileOptions, function checked(bool){
     if (bool) return;
    
     app()

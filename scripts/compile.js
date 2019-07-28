@@ -20,14 +20,14 @@ try {
 
 let { platforms = ['win', 'macos', 'linux'], 
 archs = ['x64','x86','armv6','armv7'], 
-targets = ['node', 'browser'] } = config
+targets = ['node', 'browser'], 
+nodeVersion = process.version.match(/\d+/)[0] } = config
 
 
 
 
 function build(target){
     return new Promise(function promise(resolve,reject){
-        console.log(`building for target: \u001b[1;36m${target}\u001b[0m`)
         let path = target === 'browser' ? './src/modules/index.ts' : './src/app/index.ts',
         bundler = new Bundler(path,{
             outDir:`./dist/${target}`,
@@ -54,92 +54,86 @@ function build(target){
 
 async function compile(cb){
     console.log(`\u001b[36mBuild started...\u001b[0m`)
-    if (!targets || targets.length === 0){
-        targets = [`node${process.version.match(/\d(\d)?/)[0]}`]
-    }
-    if (!platforms || platforms.length === 0){
-        let platform
-        if (process.platform === 'win32') platform = 'win'
-        if (process.platform === 'osx') platform = 'macos'
-        if (process.platform === 'linux') platform = 'linux'
+   
 
-        platforms = [platform]
-    }
+    if (targets && Array.isArray(targets) && targets.length !== 0 ){
 
-    for (let target of targets){
-
-        try {
-            await build(target.match(/node/) ? target.match(/node/)[0] : target)
-        } catch (err){
-            return cb(err)
-        }
-        // If targeting just the browser, we should exit now
-        if (!platforms) return cb('\u001b[1;32mBuild complete!\u001b[0m')
-        // We need to build for node regardless, even if the user hasn't specified it.
-        if (targets.find(val => val.match(/node/)) && targets.length > 1 && platforms.length !== 0){
+        for (let target of targets){
             try {
-                await build('node')
-            } catch(err){
+                console.info(`Building for target: \u001b[1;36m${target}\u001b[0m`)
+                await build(target.match(/node/) ? target.match(/node/)[0] : target)
+            } catch (err){
                 return cb(err)
             }
         }
-
-        for (let p of platforms){
-            if (p.match(/linux|win/)){
-                for (let a of archs){
-                    if (p.match(/win/) && a.match(/x64|x86/) || p.match(/linux/) && a.match(/x64|armv6|armv7/)){
-                        try {
-                            let pkgBin = await getBinary(PKG_FETCH, p, a, target)
-                            await rceditor(pkgBin)
-                            await exec([`./out/src/app/index.js`,'--target',p,'--out-path',`./dist/${p}/${a}`])
-                        } catch (err){
-                            console.warn(`\u001b[1;31mUnable to create package for ${p}-${a}.\n${err}\nSkipping...\u001b[0m`);
-                            continue
-                        }
-                        let files = readdirSync(`./dist/${p}/${a}`) 
-                        let extension = files[0].split('.').pop()
-                        try {
-                            await rename(p, a,files[0],extension)
-                        } catch(err){
-                            console.warn(`\u001b[1;33mUnable to modify executable for ${p}-${a}.\n${err}\nSkipping...\u001b[0m`);
-                            continue
-                        }
-                        
-                        // create the release files if windows
-                        if (!p.match(/win/) || process.argv.indexOf('--no-install') !== -1) continue
-                        let execName = `${package.productName ? package.productName.replace(/\s/g,'') : package.name}.exe`
-                        let out
-                        try {
-                            out = await createInstaller(`./dist/${p}/${a}/${execName}`, execName, compileOptions)
-                            if (out) console.log(`\u001b[1;36m${out}\u001b[0m`)
-                        } catch(err) {
-                            console.warn(`\u001b[1;33m1Unable to create installer for ${p}-${a}.\n${err}\nSkipping...\u001b[0m`);
-                            continue
-                        }
-                    }
-                }
-            } else {
-                try {
-                    await exec([`./out/src/app/index.js`,'--target',p,'--out-path',`./dist/${p}`])
-                } catch (err) {
-                    return reject(err)
-                }
-                let files = readdirSync(`./dist/${p}`)
-                let extension = files[0].split('.').pop() 
-                // rename(platform,null,files[0],extension)
-                try {
-                    // await rceditor( p, a, extension )
-                } catch( err ){
-                    return reject(err)
-                }
-            }
-            
-        }
-        console.info(` build target: \u001b[36m${target}\u001b[32m complete! ✔\u001b[0m`)
-
-
     }
 
+    // If targeting just the browser, we should exit now
+    if (!platforms || !Array.isArray(platforms) || platforms.length === 0) return cb('\u001b[1;32mBuild complete!\u001b[0m')
+
+    // We need to build for node regardless, even if the user hasn't specified it.
+    if (!targets){
+        try {
+            await build('node')
+        } catch(err){
+            return cb(err)
+        }
+    }
+
+    for (let p of platforms){
+        if (p.match(/linux|win/)){
+            for (let a of archs){
+                console.log(`Building for: \u001b[1;36m${p}-${a}\u001b[0m`)
+                if (p.match(/win/) && a.match(/x64|x86/) || p.match(/linux/) && a.match(/x64|armv6|armv7/)){
+                    try {
+                        let pkgBin = await getBinary(PKG_FETCH, p, a, `node${nodeVersion}`)
+                        await rceditor(pkgBin)
+                        await exec([`./out/src/app/index.js`,'--target',`node${nodeVersion}-${p}-${a}`,'--out-path',`./dist/${p}/${a}`])
+                    } catch (err){
+                        console.warn(`\u001b[1;31mUnable to create package for ${p}-${a}.\n${err}\nSkipping...\u001b[0m`);
+                        continue
+                    }
+                    let files = readdirSync(`./dist/${p}/${a}`) 
+                    let extension = files[0].split('.').pop()
+                    try {
+                        await rename(p, a,files[0],extension)
+                    } catch(err){
+                        console.warn(`\u001b[1;33mUnable to modify executable for ${p}-${a}.\n${err}\nSkipping...\u001b[0m`);
+                        continue
+                    }
+                    
+                    // create the release files if windows
+                    if (!p.match(/win/) || process.argv.indexOf('--no-install') !== -1) continue
+                    let execName = `${package.productName ? package.productName.replace(/\s/g,'') : package.name}.exe`
+                    let out
+                    try {
+                        out = await createInstaller(`./dist/${p}/${a}/${execName}`, execName, compileOptions)
+                        if (out) console.log(`\u001b[1;36m${out}\u001b[0m`)
+                    } catch(err) {
+                        console.warn(`\u001b[1;33m1Unable to create installer for ${p}-${a}.\n${err}\nSkipping...\u001b[0m`);
+                        continue
+                    }
+                }
+            }
+        } else {
+            console.log(`Building for: \u001b[1;36m${p}\u001b[0m`)
+            try {
+                await exec([`./out/src/app/index.js`,'--target',p,'--out-path',`./dist/${p}`])
+            } catch (err) {
+                return reject(err)
+            }
+            let files = readdirSync(`./dist/${p}`)
+            let extension = files[0].split('.').pop() 
+            // rename(platform,null,files[0],extension)
+            try {
+                // await rceditor( p, a, extension )
+            } catch( err ){
+                return reject(err)
+            }
+        }
+        console.info(` build target: \u001b[36m${p}\u001b[32m complete! ✔\u001b[0m`)
+    }
+    
 }
 
 compile(function callback(err, msg){

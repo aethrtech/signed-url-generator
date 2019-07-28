@@ -3,7 +3,7 @@ request = require('./request'),
 homedir = require('os').homedir,
 findCached = require('./find-cached'),
 mkdirRecursive = require('mkdir-recursive').mkdirRecursive,
-rename = require('fs').rename,
+copyFile = require('fs').copyFile,
 unlink = require('fs').unlink,
 package = require('../package.json')
 
@@ -72,9 +72,12 @@ module.exports = function getBinary(url, platform, arch, target){
             }
 
             // copy to .pkg-cache
-            rename(path, join(PKG_PATH, tag, asset.name), err => {
+            copyFile(path, join(PKG_PATH, tag, asset.name), err => {
                 if (err) return reject(err)
-                return resolve(join(PKG_PATH, tag, asset.name))
+                // delete the temp file
+                unlink(path, err =>{
+                    return err ? reject(err) : resolve(join(PKG_PATH, tag, asset.name))
+                })
             })
         })
     })
