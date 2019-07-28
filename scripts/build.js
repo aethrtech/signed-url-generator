@@ -42,15 +42,17 @@ module.exports =  function createInstaller(source, exeName, options){
                     let args = [
                         `--releasify="${join(__dirname, '..', 'package', `${package.productName ? package.productName.replace(/\s/g,'') : package.name}.${package.version}.nupkg`)}"`,
                          `--releaseDir="${options && options.outDir ? options.outDir : source.replace(/(\\|\/)([^(\\|\/)]*$)/,'')}"`,
-                         `--icon="${join(__dirname, '..', 'resources', 'images', 'logo.ico')}"`,
-                         `--setupIcon="${join(__dirname, '..', 'resources', 'images', 'logo.ico')}"`,
+                         `--icon="${join(__dirname, '..', 'resources', 'images', 'logo-3.ico')}"`,
+                         `--setupIcon="${join(__dirname, '..', 'resources', 'images', 'logo-3.ico')}"`,
                          `--bootstrapperExe="${join(__dirname, '..', 'vendor', 'squirrel', 'setup.exe')}`
 
                     ]
 
                     if (options.sign){
-                        args.push(`-n "/a /f ${join(__dirname, '..', '.cert', 'cert.pfx')} ${ options.sign.password ? '/p' + options.sign.password : ''} /fd sha256 /tr http://timestamp.digicert.com /td sha256"`)
+                        args.push(`-n '/a /f ${join(__dirname, '..', '.cert', 'cert.pfx')} ${ options.sign.password ? '/p "' + options.sign.password : ''}" /fd sha256 /tr http://timestamp.digicert.com /td sha256`)
                     }
+
+                    args = args.join(' ')
 
                     exec(`${join(__dirname,'..','vendor','squirrel','squirrel.com')} ${args}`, (err, stdout,stderr) => {
                         if (err) return reject(err)
